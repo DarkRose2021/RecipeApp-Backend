@@ -3,11 +3,11 @@ const mongodb = require("mongodb");
 const ObjectID = mongodb.ObjectID;
 require("dotenv").config();
 const bcryptjs = require("bcryptjs");
+const Recipe = require("./schemas/recipes");
+const User = require("./schemas/users");
 
 const config = {
 	connectionString: process.env.CONNECTION_STRING,
-	userCollection: "Users",
-	recipesCollection: "Recipes",
 	shoppingListCollection: "ShoppingLists",
 	mealPlanCollection: "MealPlans",
 	favRecipesCollection: "FavoriteRecipes",
@@ -26,42 +26,73 @@ connection.once("open", () => {
 	console.log("mongoose connected");
 });
 
-const mealPlanSchema = new mongoose.Schema(
-	{
-		user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-		planName: String,
-		dateRange: { type: [Date], required: true },
-		recipes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Recipe" }],
+exports.recipeDAL = {
+	getAllRecipes: async () => {
+		try {
+			return await Recipe.find({}).exec();
+		} catch (error) {
+			throw error;
+		}
 	},
-	{ collection: config.mealPlanCollection }
-);
 
-const MealPlan = mongoose.model("MealPlan", mealPlanSchema);
-
-const favoritesSchema = new mongoose.Schema(
-	{
-		user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-		recipes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Recipe" }],
+	createRecipe: async (
+		title,
+		ingredients,
+		instructions,
+		cookingTime,
+		servings,
+		difficultyLevel,
+		category,
+		imageUrl,
+		isPublic,
+		author
+	) => {
+		try {
+			return await Recipe.create({
+				title,
+				ingredients,
+				instructions,
+				cookingTime,
+				servings,
+				difficultyLevel,
+				category,
+				imageUrl,
+				isPublic,
+				author,
+			});
+		} catch (error) {
+			throw error;
+		}
 	},
-	{ collection: config.favRecipesCollection }
-);
 
-const Favorites = mongoose.model("Favorites", favoritesSchema);
-
-const recipeSchema = new mongoose.Schema(
-	{
-		title: { type: String, required: true },
-		ingredients: { type: [String], required: true },
-		instructions: { type: [String], required: true },
-		cookingTime: Number,
-		difficultyLevel: Number,
-		category: [String],
-		author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+	getRecipeById: async (recipeId) => {
+		try {
+			return await Recipe.find({
+				_id: new ObjectID(recipeId),
+			}).exec();
+		} catch (error) {
+			throw error;
+		}
 	},
-	{ collection: config.recipesCollection }
-);
 
-const Recipe = mongoose.model("Recipe", recipeSchema);
+	updateRecipeById: async (id, newData) => {
+		try {
+			return await Recipe.findByIdAndUpdate(id, newData, {
+				new: true,
+			});
+		} catch (error) {
+			throw error;
+		}
+	},
+
+	deleteRecipeById: async (id) => {
+		try {
+			return await Recipe.findByIdAndDelete(id);
+		} catch (error) {
+			throw error;
+		}
+	},
+};
 
 const sessionSchema = new mongoose.Schema(
 	{
@@ -75,40 +106,10 @@ const sessionSchema = new mongoose.Schema(
 
 const Session = mongoose.model("Session", sessionSchema);
 
-const shoppingListSchema = new mongoose.Schema(
-	{
-		user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-		listName: String,
-		dateCreated: { type: Date, default: Date.now },
-		items: [
-			{
-				name: String,
-				quantity: Number,
-				unit: String,
-				isPurchased: { type: Boolean, default: false },
-			},
-		],
-	},
-	{ collection: config.shoppingListCollection }
-);
-
-const ShoppingList = mongoose.model("ShoppingList", shoppingListSchema);
-
-const userSchema = new Schema(
-	{
-		username: { type: String, unique: true, required: true },
-		password: { type: String, required: true },
-		email: { type: String, unique: true, required: true },
-	},
-	{ collection: config.userCollection }
-);
-const User = mongoose.model("User", userSchema);
-
 exports.userDAL = {
 	getAllUsers: async () => {
 		try {
-			let users = await User.find({}).exec();
-			return users;
+			return await User.find({}).exec();
 		} catch (error) {
 			throw error;
 		}
@@ -116,12 +117,11 @@ exports.userDAL = {
 
 	createUser: async (username, password, email) => {
 		try {
-			const newUser = await User.create({
+			return await User.create({
 				username,
 				password,
 				email,
 			});
-			return newUser;
 		} catch (error) {
 			throw error;
 		}
@@ -129,10 +129,9 @@ exports.userDAL = {
 
 	getUserById: async (userId) => {
 		try {
-			const user = await User.find({
-				_id: new mongodb.ObjectId(userId),
+			return await User.find({
+				_id: new ObjectID(userId),
 			}).exec();
-			return user;
 		} catch (error) {
 			throw error;
 		}
@@ -140,10 +139,9 @@ exports.userDAL = {
 
 	updateUserById: async (userId, newData) => {
 		try {
-			const updatedUser = await User.findByIdAndUpdate(userId, newData, {
+			return await User.findByIdAndUpdate(userId, newData, {
 				new: true,
 			});
-			return updatedUser;
 		} catch (error) {
 			throw error;
 		}
@@ -151,8 +149,7 @@ exports.userDAL = {
 
 	deleteUserById: async (userId) => {
 		try {
-			const deletedUser = await User.findByIdAndDelete(userId);
-			return deletedUser;
+			return await User.findByIdAndDelete(userId);
 		} catch (error) {
 			throw error;
 		}

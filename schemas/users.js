@@ -23,6 +23,7 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'MealPlan',
   }],
-}, { timestamps: true });
+}, { timestamps: true },
+	{ collection: "Users" });
 
 module.exports = mongoose.model('User', UserSchema);

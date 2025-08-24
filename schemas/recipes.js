@@ -3,18 +3,15 @@ const RecipeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  description: {
-    type: String,
-  },
   ingredients: [{
+    quantity: { type: String, required: true },
     name: { type: String, required: true },
-    quantity: { type: String },
   }],
   instructions: [{
     step: { type: String, required: true },
   }],
   cookingTime: {
-    type: Number, // Time in minutes
+    type: Number,
   },
   servings: {
     type: Number,
@@ -26,14 +23,16 @@ const RecipeSchema = new mongoose.Schema({
   },
   tags: [{
     type: String,
+    required: true,
   }],
   imageUrl: {
     type: String,
+    required: true,
   },
   isPublic: {
     type: Boolean,
-    default: true,
+    default: false,
   },
-}, { timestamps: true });
+}, { timestamps: true }, {collection: "Recipes"});
 
 module.exports = mongoose.model('Recipe', RecipeSchema);

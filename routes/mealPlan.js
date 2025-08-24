@@ -9,6 +9,11 @@ module.exports = (app) => {
 		
 	});
 
+  app.post("/meal-plans", async (req, res) => {
+		
+	});
+
+
 	app.put("/meal-plan/:id", async (req, res) => {
 		
 	});
